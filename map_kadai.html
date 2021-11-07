@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Map&amp;Geolocation</title>
+      <!-- リセットcss読み込み -->
+      <link rel="stylesheet" href="css/reset.css">
+      <!-- style.css読み込み -->
+      <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+  <!-- MapArea -->
+  <!-- <div id="view"></div> -->
+  <div id="myMap"></div>
+  <!-- /MapArea -->
+  <div id="memo">
+    <h1 class="title">存在証明履歴</h1>
+    <p class="setsumei">あなたのいたところの履歴は以下の通りです。</p>
+
+
+    <table id="list">
+        <tr>
+            <th>日時</th><th>緯度経度・メモ</th>
+        </tr>
+        <!-- ここに追加データが挿入される -->
+    </table>
+  </div>
+
+  <!-- jQuery&GoogleMapsAPI -->
+  <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+  <script src='https://www.bing.com/api/maps/mapcontrol?callback=GetMap&key=[API_KEY]'
+    async defer></script>
+  <script src="js/BmapQuery.js"></script>
+  <script>
+//****************************************************************************************
+// BingMaps&BmapQuery
+//****************************************************************************************
+//Init
+    //------------------------------------------------------------------------
+    //1. Instance
+    //------------------------------------------------------------------------
+    // const map = new Bmap("#myMap");
+
+    //------------------------------------------------------------------------
+    //2. Display Map
+    //------------------------------------------------------------------------
+    function GetMap() {
+    navigator.geolocation.getCurrentPosition(SetMap);
+    }
+
+    function SetMap(position) {
+    //lat=緯度、lon=経度 を取得
+    const lat = position.coords.latitude;
+    const lon = position.coords.longitude;
+    map = new Bmap("#myMap");
+    map.startMap(lat, lon, "load", 25); //The place is Bellevue.
+    let pin = map.pin(lat, lon, "#ff0000");
+
+    //----------------------------------------------------
+    //3. Add Infobox-Actions(Event)
+    // onInfobox(lat, lon, "title","description", "text or html");
+    //----------------------------------------------------
+    //Configuration
+    var date1 = new Date();
+	  var date2 = date1.getFullYear() + "年" + 
+				(date1.getMonth() + 1)  + "月" + 
+				date1.getDate() + "日" + 
+				date1.getHours() + "時" + 
+				date1.getMinutes() + "分" + 
+				date1.getSeconds() + "秒" 
+    const title = date2;
+    const descript = "lat:"+lat+" lon:"+lon;
+    const actions =
+        [
+            //1.action
+            {
+                label: '存在証明する',
+                eventHandler: function () { //function
+                    memo = window.prompt("場所の名称を記録しましょう", "");
+                    localStorage.setItem(date1,"lat:"+lat+" lon:"+lon+","+memo)
+                    console.log(date2 +"存在証明メニューが押下されました");
+
+                    const html = `
+
+                    <tr>
+                    <td>${date1}</td>
+                    <td>${localStorage.getItem(date1)}</td>
+                    </tr>`;
+                    $("#list").append(html);
+
+                    date1 = new Date();
+                    // date2 = "";
+                }
+            }
+            ];
+    //Create Event to Infobox
+    map.onInfobox(lat,lon, title, descript, actions);
+
+
+    } 
+
+  </script>
+
+
+</body>
+
+</html>
